@@ -52,6 +52,15 @@ type Msg
     | Update String
 
 
+type alias ToBackend =
+    Msg
+
+
+toBackend : Msg -> Maybe ToBackend
+toBackend msg =
+    Just msg
+
+
 initModel : Model
 initModel =
     { entries =

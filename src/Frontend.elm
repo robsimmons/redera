@@ -75,7 +75,12 @@ update msg model =
                         _ ->
                             model.mode
               }
-            , Lamdera.sendToBackend (AppToBackend amsg)
+            , case App.toBackend amsg of
+                Nothing ->
+                    Cmd.none
+
+                Just bmsg ->
+                    Lamdera.sendToBackend (AppToBackend bmsg)
             )
 
         NoOpFrontendMsg ->

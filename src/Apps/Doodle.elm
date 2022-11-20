@@ -16,6 +16,7 @@ type Color
     | White
 
 
+colorRGB : Color -> Css.Color
 colorRGB c =
     case c of
         Red ->
@@ -58,6 +59,26 @@ type Msg
     | NoOpMsg
 
 
+type alias ToBackend =
+    Msg
+
+
+toBackend : Msg -> Maybe ToBackend
+toBackend msg =
+    case msg of
+        Color _ ->
+            Just msg
+
+        ChooseColor _ ->
+            Nothing
+
+        Deactivate ->
+            Nothing
+
+        NoOpMsg ->
+            Nothing
+
+
 initModel : Model
 initModel =
     { grid =
@@ -74,23 +95,14 @@ initState _ =
     { color = Black, drawing = False }
 
 
-updateModel : SessionId -> ClientId -> Msg -> Model -> Model
+updateModel : SessionId -> ClientId -> ToBackend -> Model -> Model
 updateModel _ _ msg model =
     case msg of
-        Color { row, col, color } ->
+        Color2 { row, col, color } ->
             { model
                 | grid =
                     model.grid |> List.updateAt row (List.updateAt col (always color))
             }
-
-        ChooseColor _ ->
-            model
-
-        Deactivate ->
-            model
-
-        NoOpMsg ->
-            model
 
 
 updateState : Msg -> Props -> State -> State

@@ -44,6 +44,19 @@ type alias Msg =
     App.Msg
 
 
+{-| This represents the message type that actually gets passed to the backend
+(for simplicity it's easiest to make this the same type as Msg).
+-}
+type alias ToBackend =
+    App.ToBackend
+
+
+{-| -}
+toBackend : Msg -> Maybe ToBackend
+toBackend =
+    App.toBackend
+
+
 {-| Every local message has the opportunity to update the local state.
 The state is updated before any message is communicated to the backend,
 and so this is an opportunity to change the local state to register "I've
@@ -57,7 +70,7 @@ updateState =
 {-| When the backend receives a msg, the backend has the opportunity to update
 the model.
 -}
-updateModel : SessionId -> ClientId -> Msg -> Model -> Model
+updateModel : SessionId -> ClientId -> ToBackend -> Model -> Model
 updateModel =
     App.updateModel
 

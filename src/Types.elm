@@ -42,7 +42,7 @@ type FrontendMsg
 
 type ToBackend
     = NoOpToBackend
-    | AppToBackend App.Msg
+    | AppToBackend App.ToBackend
 
 
 type BackendMsg

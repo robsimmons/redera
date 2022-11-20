@@ -7,7 +7,6 @@ import Dict exposing (Dict)
 import Lamdera exposing (ClientId, SessionId)
 import Set exposing (Set)
 import Spinner
-import Time
 import Url exposing (Url)
 
 
@@ -43,7 +42,7 @@ type FrontendMsg
 
 type ToBackend
     = NoOpToBackend
-    | AppToBackend App.ToBackend
+    | AppToBackend App.Msg
 
 
 type BackendMsg

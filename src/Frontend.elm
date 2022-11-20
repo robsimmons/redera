@@ -5,7 +5,6 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Color
 import Html
-import Html.Attributes as Attr
 import Html.Styled
 import Lamdera
 import Spinner exposing (defaultConfig)
@@ -32,7 +31,7 @@ app =
 subscriptions : Model -> Sub FrontendMsg
 subscriptions model =
     case model.mode of
-        Waiting spinner ->
+        Waiting _ ->
             Spinner.subscription |> Sub.map Spinner
 
         App _ ->
@@ -40,7 +39,7 @@ subscriptions model =
 
 
 init : Url.Url -> Nav.Key -> ( Model, Cmd FrontendMsg )
-init url key =
+init _ key =
     ( { key = key
       , mode = Waiting Spinner.init
       }
@@ -63,7 +62,7 @@ update msg model =
                     , Nav.load url
                     )
 
-        UrlChanged url ->
+        UrlChanged _ ->
             ( model, Cmd.none )
 
         AppMsg amsg ->
@@ -71,17 +70,12 @@ update msg model =
                 | mode =
                     case model.mode of
                         App { props, state } ->
-                            App { props = props, state = App.updateState state amsg }
+                            App { props = props, state = App.updateState amsg props state }
 
                         _ ->
                             model.mode
               }
-            , case App.backendMsg amsg of
-                Nothing ->
-                    Cmd.none
-
-                Just bmsg ->
-                    Lamdera.sendToBackend (AppToBackend bmsg)
+            , Lamdera.sendToBackend (AppToBackend amsg)
             )
 
         NoOpFrontendMsg ->
@@ -115,7 +109,7 @@ updateFromBackend msg model =
                             App { props = props, state = App.initState props }
 
                         App old ->
-                            App { props = props, state = App.receiveProps old.props props old.state }
+                            App { props = props, state = App.receiveProps { old = old.props, new = props } old.state }
               }
             , Cmd.none
             )

@@ -44,7 +44,7 @@ type alias Props =
 
 
 type alias State =
-    { color : Color, drawing : Bool }
+    { color : Color, drawing : Bool, grid : Bool }
 
 
 deriveProps : SessionId -> ClientId -> Model -> Props
@@ -56,6 +56,7 @@ type Msg
     = Color { row : Int, col : Int, color : Color }
     | ChooseColor Color
     | Deactivate
+    | ToggleGrid
     | NoOpMsg
 
 
@@ -75,6 +76,9 @@ toBackend msg =
         Deactivate ->
             Nothing
 
+        ToggleGrid ->
+            Nothing
+
         NoOpMsg ->
             Nothing
 
@@ -92,7 +96,7 @@ initModel =
 
 initState : Props -> State
 initState _ =
-    { color = Black, drawing = False }
+    { color = Black, drawing = False, grid = False }
 
 
 updateModel : SessionId -> ClientId -> ToBackend -> Model -> Model
@@ -113,6 +117,9 @@ updateModel _ _ msg model =
         NoOpMsg ->
             model
 
+        ToggleGrid ->
+            model
+
 
 updateState : Msg -> Props -> State -> State
 updateState msg _ state =
@@ -128,6 +135,9 @@ updateState msg _ state =
 
         NoOpMsg ->
             state
+
+        ToggleGrid ->
+            { state | grid = not state.grid }
 
 
 receiveProps : { new : Props, old : Props } -> State -> State
@@ -189,7 +199,15 @@ view props state =
                                         , Css.width (px side)
                                         , Css.height (px side)
                                         , Css.backgroundColor (colorRGB color)
-                                        , Css.border3 (px 1) Css.solid border
+                                        , Css.border3
+                                            (if state.grid then
+                                                px 1
+
+                                             else
+                                                px 0
+                                            )
+                                            Css.solid
+                                            border
                                         ]
                                     , Events.onMouseEnter
                                         (if state.drawing then
@@ -211,7 +229,7 @@ view props state =
                     )
                 |> List.concat
             )
-        , Html.div []
+        , Html.div [ Attr.css [ Css.marginBottom (px 5) ] ]
             ([ Black, White, Red, Yellow, Blue ]
                 |> List.map
                     (\color ->
@@ -219,8 +237,8 @@ view props state =
                             [ Events.onClick (ChooseColor color)
                             , Attr.css
                                 [ Css.display Css.inlineBlock
-                                , Css.width (px 40)
-                                , Css.height (px 40)
+                                , Css.width (px 45)
+                                , Css.height (px 45)
                                 , Css.backgroundColor (colorRGB color)
                                 , Css.border3 (px 5) Css.solid <|
                                     if color /= state.color then
@@ -236,4 +254,5 @@ view props state =
                             []
                     )
             )
+        , Html.button [ Events.onClick ToggleGrid ] [ Html.text "Toggle grid" ]
         ]

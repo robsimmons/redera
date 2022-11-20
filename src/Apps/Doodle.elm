@@ -98,11 +98,20 @@ initState _ =
 updateModel : SessionId -> ClientId -> ToBackend -> Model -> Model
 updateModel _ _ msg model =
     case msg of
-        Color2 { row, col, color } ->
+        Color { row, col, color } ->
             { model
                 | grid =
                     model.grid |> List.updateAt row (List.updateAt col (always color))
             }
+
+        ChooseColor _ ->
+            model
+
+        Deactivate ->
+            model
+
+        NoOpMsg ->
+            model
 
 
 updateState : Msg -> Props -> State -> State

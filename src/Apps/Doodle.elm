@@ -165,11 +165,19 @@ view props state =
 
         width =
             side * (toFloat <| List.length (List.head props.grid |> Maybe.withDefault []))
+
+        gridSize =
+            if state.grid then
+                1
+
+            else
+                0
     in
     Html.div
         [ Attr.css
             [ Css.width (px <| width + 10)
             , Css.margin4 (px 100) Css.auto (px 0) Css.auto
+            , Css.boxSizing Css.borderBox
             ]
         ]
         [ Html.div
@@ -196,18 +204,11 @@ view props state =
                                         [ Css.position Css.absolute
                                         , Css.top (px <| side * toFloat row)
                                         , Css.left (px <| side * toFloat col)
-                                        , Css.width (px side)
-                                        , Css.height (px side)
+                                        , Css.width (px (side - gridSize))
+                                        , Css.height (px (side - gridSize))
                                         , Css.backgroundColor (colorRGB color)
-                                        , Css.border3
-                                            (if state.grid then
-                                                px 1
-
-                                             else
-                                                px 0
-                                            )
-                                            Css.solid
-                                            border
+                                        , Css.borderLeft3 (px gridSize) Css.solid border
+                                        , Css.borderTop3 (px gridSize) Css.solid border
                                         ]
                                     , Events.onMouseEnter
                                         (if state.drawing then

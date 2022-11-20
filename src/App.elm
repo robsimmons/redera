@@ -44,14 +44,25 @@ type alias Msg =
     App.Msg
 
 
-{-| This represents the message type that actually gets passed to the backend
-(for simplicity it's easiest to make this the same type as Msg).
+{-| This represents the message type that actually gets passed to the backend.
 -}
 type alias ToBackend =
     App.ToBackend
 
 
-{-| -}
+{-| Transforms a `Msg` into a `ToBackend`, allowing msgs to be only
+selectively sent over the wire to where they can influence the Model.
+
+If you don't want to bother, the easiest way to handle this is to send
+all messages to the backend:
+
+    type alias ToBackend =
+        Msg
+
+    toBackend msg =
+        Just msg
+
+-}
 toBackend : Msg -> Maybe ToBackend
 toBackend =
     App.toBackend
@@ -86,9 +97,9 @@ deriveProps =
 from React. The most Elm-like solution to avoiding uses of componentWillReceiveProps
 in React is to have the component be
 [fully controlled](https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html#recommendation-fully-controlled-component),
-and we could do that here, but it would mean that every keystroke would require an
-RPC to update, which is going to feel sluggish in most situations. Therefore,
-perhaps we want to resurrect the receiveProps idea in order to have controlled components.
+and we could do that here, but it would mean that every update would require an
+RPC round-trip, which is going to feel sluggish in most situations. Therefore,
+perhaps we want to resurrect the receiveProps idea in order to have controlled components?
 -}
 receiveProps : { new : Props, old : Props } -> State -> State
 receiveProps =

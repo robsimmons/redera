@@ -4,7 +4,7 @@ import Css exposing (px)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attr
 import Html.Styled.Events as Events
-import Lamdera exposing (SessionId, ClientId)
+import Lamdera exposing (ClientId, SessionId)
 import List.Extra as List
 
 
@@ -14,10 +14,6 @@ type alias Entry =
 
 type alias Model =
     { entries : List Entry }
-
-
-type alias BackendModel =
-    { model : Model }
 
 
 type alias Props =
@@ -31,7 +27,7 @@ type alias State =
 
 
 deriveProps : SessionId -> ClientId -> Model -> Props
-deriveProps sessionId _  { entries } =
+deriveProps sessionId _ { entries } =
     { entries =
         entries
             |> List.map
@@ -135,7 +131,7 @@ updateModel sessionId _ msg model =
 
 
 updateState : Msg -> Props -> State -> State
-updateState msg _ state  =
+updateState msg _ state =
     case msg of
         Update str ->
             { state | contents = str }
@@ -147,7 +143,7 @@ updateState msg _ state  =
             { state | editable = False }
 
 
-receiveProps : { new: Props, old: Props } -> State -> State
+receiveProps : { new : Props, old : Props } -> State -> State
 receiveProps props state =
     let
         oldEditableIndex =
@@ -181,7 +177,7 @@ view props state =
                             Nothing ->
                                 [ Html.button
                                     [ Attr.css [ Css.width (px 100) ]
-                                    , Events.onClick ( (Claim i))
+                                    , Events.onClick (Claim i)
                                     ]
                                     [ Html.text "Claim" ]
                                 ]
@@ -192,7 +188,7 @@ view props state =
                             Just True ->
                                 [ Html.button
                                     [ Attr.css [ Css.width (px 100) ]
-                                    , Events.onClick ( Release)
+                                    , Events.onClick Release
                                     ]
                                     [ Html.text "Release" ]
                                 ]
@@ -200,7 +196,7 @@ view props state =
                             ++ (case owner of
                                     Just True ->
                                         [ Html.input
-                                            [ Attr.css [ Css.margin4 (px 0) (px 0) (px 0) (px 10), Css.width (Css.px 390) ], Attr.disabled (not state.editable), Attr.value state.contents, Events.onInput (Update) ]
+                                            [ Attr.css [ Css.margin4 (px 0) (px 0) (px 0) (px 10), Css.width (Css.px 390) ], Attr.disabled (not state.editable), Attr.value state.contents, Events.onInput Update ]
                                             []
                                         ]
 

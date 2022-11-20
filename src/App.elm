@@ -1,6 +1,6 @@
 module App exposing (..)
 
-import Apps.Slots as App
+import Apps.Doodle as App
 import Html.Styled exposing (Html)
 import Lamdera exposing (ClientId, SessionId)
 
@@ -71,7 +71,7 @@ deriveProps =
 
 {-| The best analogy here is the very-not-beloved componentWillReceiveProps
 from React. The most Elm-like solution to avoiding uses of componentWillReceiveProps
-in React is to have the component be 
+in React is to have the component be
 [fully controlled](https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html#recommendation-fully-controlled-component),
 and we could do that here, but it would mean that every keystroke would require an
 RPC to update, which is going to feel sluggish in most situations. Therefore,

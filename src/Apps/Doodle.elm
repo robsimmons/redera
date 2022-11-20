@@ -8,8 +8,34 @@ import Lamdera exposing (ClientId, SessionId)
 import List.Extra as List
 
 
+type Color
+    = Red
+    | Blue
+    | Yellow
+    | Black
+    | White
+
+
+colorRGB c =
+    case c of
+        Red ->
+            Css.rgb 108 29 25
+
+        Blue ->
+            Css.rgb 36 74 123
+
+        Yellow ->
+            Css.rgb 211 178 85
+
+        Black ->
+            Css.rgb 0 0 0
+
+        White ->
+            Css.rgb 255 255 255
+
+
 type alias Model =
-    { grid : List (List Bool) }
+    { grid : List (List Color) }
 
 
 type alias Props =
@@ -17,7 +43,7 @@ type alias Props =
 
 
 type alias State =
-    { color : Bool, drawing : Bool }
+    { color : Color, drawing : Bool }
 
 
 deriveProps : SessionId -> ClientId -> Model -> Props
@@ -26,26 +52,26 @@ deriveProps _ _ model =
 
 
 type Msg
-    = Color { row : Int, col : Int, color : Bool }
-    | ChooseColor Bool
-    | Click
+    = Color { row : Int, col : Int, color : Color }
+    | ChooseColor Color
+    | Deactivate
     | NoOpMsg
 
 
 initModel : Model
 initModel =
     { grid =
-        List.repeat 30 (List.repeat 52 False)
-            |> List.updateAt 2 (List.updateAt 7 (always True))
-            |> List.updateAt 2 (List.updateAt 8 (always True))
-            |> List.updateAt 2 (List.updateAt 9 (always True))
-            |> List.updateAt 3 (List.updateAt 9 (always True))
+        List.repeat 30 (List.repeat 52 White)
+            |> List.updateAt 2 (List.updateAt 7 (always Red))
+            |> List.updateAt 2 (List.updateAt 8 (always Blue))
+            |> List.updateAt 2 (List.updateAt 9 (always Yellow))
+            |> List.updateAt 3 (List.updateAt 9 (always Black))
     }
 
 
 initState : Props -> State
 initState _ =
-    { color = True, drawing = False }
+    { color = Black, drawing = False }
 
 
 updateModel : SessionId -> ClientId -> Msg -> Model -> Model
@@ -60,7 +86,7 @@ updateModel _ _ msg model =
         ChooseColor _ ->
             model
 
-        Click ->
+        Deactivate ->
             model
 
         NoOpMsg ->
@@ -71,13 +97,13 @@ updateState : Msg -> Props -> State -> State
 updateState msg _ state =
     case msg of
         Color _ ->
-            state
+            { state | drawing = True }
 
         ChooseColor color ->
-            { state | color = color }
+            { state | color = color, drawing = False }
 
-        Click ->
-            { state | drawing = not state.drawing }
+        Deactivate ->
+            { state | drawing = False }
 
         NoOpMsg ->
             state
@@ -94,17 +120,38 @@ view props state =
         side =
             10
 
-        black =
-            Css.rgb 0 0 0
-
         white =
             Css.rgb 255 255 255
 
         gray =
             Css.rgb 100 100 100
+
+        active =
+            Css.rgb 17 234 234
+
+        width =
+            side * (toFloat <| List.length (List.head props.grid |> Maybe.withDefault []))
     in
-    Html.div [ Attr.css [ Css.width (px 520), Css.margin4 (px 100) Css.auto (px 0) Css.auto ] ]
-        [ Html.div [ Attr.css [ Css.position Css.relative, Css.height (px <| side * toFloat (1 + List.length props.grid)) ] ]
+    Html.div
+        [ Attr.css
+            [ Css.width (px <| width + 10)
+            , Css.margin4 (px 100) Css.auto (px 0) Css.auto
+            ]
+        ]
+        [ Html.div
+            [ Attr.css
+                [ Css.position Css.relative
+                , Css.height (px <| side * toFloat (List.length props.grid))
+                , Css.width (px <| width)
+                , Css.marginBottom (px 5)
+                , Css.border3 (px 5) Css.solid <|
+                    if state.drawing then
+                        active
+
+                    else
+                        gray
+                ]
+            ]
             (props.grid
                 |> List.indexedMap
                     (\row ->
@@ -117,13 +164,7 @@ view props state =
                                         , Css.left (px <| side * toFloat col)
                                         , Css.width (px side)
                                         , Css.height (px side)
-                                        , Css.backgroundColor
-                                            (if color then
-                                                black
-
-                                             else
-                                                white
-                                            )
+                                        , Css.backgroundColor (colorRGB color)
                                         ]
                                     , Events.onMouseEnter
                                         (if state.drawing then
@@ -132,31 +173,42 @@ view props state =
                                          else
                                             NoOpMsg
                                         )
-                                    , Events.onClick Click
+                                    , Events.onClick
+                                        (if state.drawing then
+                                            Deactivate
+
+                                         else
+                                            Color { row = row, col = col, color = state.color }
+                                        )
                                     ]
                                     []
                             )
                     )
                 |> List.concat
             )
-        , Html.div [ Events.onClick (ChooseColor True) ]
-            [ Html.div [ Attr.css [ Css.display Css.inlineBlock, Css.width (px 20), Css.height (px 20), Css.backgroundColor black, Css.border3 (px 2) Css.solid gray ] ] []
-            , Html.text
-                (if state.color == True then
-                    "selected"
+        , Html.div []
+            ([ Black, White, Red, Yellow, Blue ]
+                |> List.map
+                    (\color ->
+                        Html.div
+                            [ Events.onClick (ChooseColor color)
+                            , Attr.css
+                                [ Css.display Css.inlineBlock
+                                , Css.width (px 40)
+                                , Css.height (px 40)
+                                , Css.backgroundColor (colorRGB color)
+                                , Css.border3 (px 5) Css.solid <|
+                                    if color /= state.color then
+                                        white
 
-                 else
-                    ""
-                )
-            ]
-        , Html.div [ Events.onClick (ChooseColor False) ]
-            [ Html.div [ Attr.css [ Css.display Css.inlineBlock, Css.width (px 20), Css.height (px 20), Css.backgroundColor white, Css.border3 (px 2) Css.solid gray ] ] []
-            , Html.text
-                (if state.color == False then
-                    "selected"
+                                    else if state.drawing then
+                                        active
 
-                 else
-                    ""
-                )
-            ]
+                                    else
+                                        gray
+                                ]
+                            ]
+                            []
+                    )
+            )
         ]

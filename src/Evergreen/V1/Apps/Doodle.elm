@@ -24,3 +24,4 @@ type Msg
         }
     | ChooseColor Bool
     | Click
+    | NoOpMsg

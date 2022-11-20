@@ -147,6 +147,9 @@ view props state =
         gray =
             Css.rgb 100 100 100
 
+        border =
+            Css.rgb 200 200 200
+
         active =
             Css.rgb 17 234 234
 
@@ -186,6 +189,7 @@ view props state =
                                         , Css.width (px side)
                                         , Css.height (px side)
                                         , Css.backgroundColor (colorRGB color)
+                                        , Css.border3 (px 1) Css.solid border
                                         ]
                                     , Events.onMouseEnter
                                         (if state.drawing then

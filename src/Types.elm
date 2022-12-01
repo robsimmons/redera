@@ -28,7 +28,7 @@ type alias Session =
 type alias BackendModel =
     { sessions : Dict SessionId Session
     , clients : Dict ClientId { session : SessionId }
-    , model : App.Model
+    , model : Maybe App.Model
     }
 
 

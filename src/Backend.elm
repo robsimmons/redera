@@ -25,7 +25,7 @@ init : ( Model, Cmd BackendMsg )
 init =
     ( { sessions = Dict.empty
       , clients = Dict.empty
-      , model = App.initModel
+      , model = Nothing
       }
     , Cmd.none
     )
@@ -38,6 +38,15 @@ update msg model =
             ( model, Cmd.none )
 
         ClientConnected sessionId clientId ->
+            let
+                appModel =
+                    case model.model of
+                        Nothing ->
+                            App.initModel sessionId clientId
+
+                        Just m ->
+                            m
+            in
             ( { model
                 | sessions =
                     model.sessions
@@ -51,8 +60,9 @@ update msg model =
                 , clients =
                     model.clients
                         |> Dict.insert clientId { session = sessionId }
+                , model = Just appModel
               }
-            , Lamdera.sendToFrontend clientId (Props <| App.deriveProps sessionId clientId model.model)
+            , Lamdera.sendToFrontend clientId (Props <| App.deriveProps sessionId clientId appModel)
             )
 
         ClientDisconnected sessionId clientId ->
@@ -75,19 +85,24 @@ updateFromFrontend sessionId clientId msg model =
             ( model, Cmd.none )
 
         AppToBackend bmsg ->
-            let
-                newModel =
-                    model.model |> App.updateModel sessionId clientId bmsg
-            in
-            ( { model | model = model.model |> App.updateModel sessionId clientId bmsg }
-            , model.clients
-                |> Dict.toList
-                |> List.map
-                    (\( client, { session } ) ->
-                        Lamdera.sendToFrontend client (Props (App.deriveProps session client newModel))
+            case model.model of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just oldModel ->
+                    let
+                        newModel =
+                            oldModel |> App.updateModel sessionId clientId bmsg
+                    in
+                    ( { model | model = oldModel |> App.updateModel sessionId clientId bmsg |> Just }
+                    , model.clients
+                        |> Dict.toList
+                        |> List.map
+                            (\( client, { session } ) ->
+                                Lamdera.sendToFrontend client (Props (App.deriveProps session client newModel))
+                            )
+                        |> Cmd.batch
                     )
-                |> Cmd.batch
-            )
 
 
 subscriptions : Model -> Sub BackendMsg

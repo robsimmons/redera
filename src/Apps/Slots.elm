@@ -61,8 +61,8 @@ toBackend msg =
     Just msg
 
 
-initModel : Model
-initModel =
+initModel : SessionId -> ClientId -> Model
+initModel sessionId clientId =
     { entries =
         [ { owner = Nothing, contents = "one" }
         , { owner = Nothing, contents = "two" }

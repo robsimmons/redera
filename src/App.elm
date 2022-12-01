@@ -1,6 +1,6 @@
 module App exposing (..)
 
-import Apps.Doodle as App
+import Apps.Slots as App
 import Html.Styled exposing (Html)
 import Lamdera exposing (ClientId, SessionId)
 
@@ -11,7 +11,7 @@ type alias Model =
     App.Model
 
 
-initModel : Model
+initModel : SessionId -> ClientId -> Model
 initModel =
     App.initModel
 
